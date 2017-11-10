@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using NCE.UTscanner.ModulesCommonData;
+using NCE.ModulesCommonData;
 
 namespace NCE.FileManage
 {
