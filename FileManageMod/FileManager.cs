@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-namespace NCE.UTscanner.FileManageMod
+namespace NCE.FileManage
 {
     /// <summary>
     /// Менеджер по работе с файлами

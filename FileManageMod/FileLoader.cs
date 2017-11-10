@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NCE.UTscanner.ModulesCommonData;
 
-namespace NCE.UTscanner.FileManageMod
+namespace NCE.FileManage
 {
     /// <summary>
     /// Модуль чтения из файла
