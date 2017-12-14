@@ -92,6 +92,23 @@ namespace NCE.FileManage
             if (!Directory.Exists(_saveToFolder))
                 Directory.CreateDirectory(_saveToFolder);
         }
+
+        /// <summary>
+        /// Загрузка конфиг файла контроля
+        /// </summary>
+        /// <param name="file">Путь к файлу</param>
+        /// <returns>Десериализованый конфиг</returns>
+        public static ConfigFile<T> LoadConfig(Stream stream)
+        {
+            if (stream != null)
+            {
+                stream.Position = 0;
+                DataContractSerializer ser = new DataContractSerializer(typeof(ConfigFile<T>));
+                return ser.ReadObject(stream) as ConfigFile<T>;
+            }
+            return null;
+        }
+
         /// <summary>
         /// Сохраняет настройки файла контроля и подготавливает модуль сохранения файла контроля 
         /// </summary>
@@ -121,6 +138,30 @@ namespace NCE.FileManage
             _fileSaver = new FileSave(_dataFile, append);
             _fileSaver.Completion.ContinueWith((x) => { _fileSaved = true; });
         }
+
+        /// <summary>
+        /// Загрузка конфиг файла контроля
+        /// </summary>
+        /// <param name="file">Путь к файлу</param>
+        /// <returns>Десериализованый конфиг</returns>
+        public ConfigFile<T> LoadConfig()
+        {
+            //if (Path.GetExtension(file).ToLowerInvariant() == ".dat")
+            //    file += ".config";
+            //else if (Path.GetExtension(file).ToLowerInvariant() != ".dat.config")
+            //{
+            //    return null;
+            //}
+
+            if (!_dataConfigFile.Exists)
+                return null;
+
+            using (FileStream fS = _dataConfigFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                DataContractSerializer ser = new DataContractSerializer(typeof(ConfigFile<T>));
+                return ser.ReadObject(fS) as ConfigFile<T>;
+            }
+        }
         /// <summary>
         /// Загрузка файла контроля
         /// </summary>
@@ -146,45 +187,7 @@ namespace NCE.FileManage
             //PropagateCompletion - обязательный, автоматическа передача окончания загрузке файла по цепочке модулей
             _fileLoader.LinkTo(target, new DataflowLinkOptions() { PropagateCompletion = true });
             _fileLoader.StartLoadingSingleTrack();
-        }
-        /// <summary>
-        /// Загрузка конфиг файла контроля
-        /// </summary>
-        /// <param name="file">Путь к файлу</param>
-        /// <returns>Десериализованый конфиг</returns>
-        public ConfigFile<T> LoadConfig()
-        {
-            //if (Path.GetExtension(file).ToLowerInvariant() == ".dat")
-            //    file += ".config";
-            //else if (Path.GetExtension(file).ToLowerInvariant() != ".dat.config")
-            //{
-            //    return null;
-            //}
-
-            if (!_dataConfigFile.Exists)
-                return null;
-
-            using (FileStream fS = _dataConfigFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                DataContractSerializer ser = new DataContractSerializer(typeof(ConfigFile<T>));
-                return ser.ReadObject(fS) as ConfigFile<T>;
-            }
-        }
-        /// <summary>
-        /// Загрузка конфиг файла контроля
-        /// </summary>
-        /// <param name="file">Путь к файлу</param>
-        /// <returns>Десериализованый конфиг</returns>
-        public ConfigFile<T> LoadConfig(Stream stream)
-        {
-            if (stream != null)
-            {
-                stream.Position = 0;
-                DataContractSerializer ser = new DataContractSerializer(typeof(ConfigFile<T>));
-                return ser.ReadObject(stream) as ConfigFile<T>;
-            }
-            return null;
-        }
+        }        
         /// <summary>
         /// Запись сериализованого конфиг файла
         /// </summary>
