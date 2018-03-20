@@ -34,8 +34,10 @@ namespace NCE.FileManage
         /// Дозапись в конец файла
         /// </summary>
         private bool _append = false;
+        private bool disposedValue = false; // To detect redundant calls
+        private bool _streamClosed;
 
-        public bool StreamClosed { get; set; }
+        public bool StreamClosed { get => _streamClosed; private set => _streamClosed = value; }
         public string ModuleName
         {
             get
@@ -57,7 +59,7 @@ namespace NCE.FileManage
         public FileSave(FileInfo file, bool append)
         {
             _saveBlock = new ActionBlock<byte[]>(new Action<byte[]>(SaveRawData), new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1 });
-            if(!_append)
+            if (!_append)
                 _dataFile = file.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
             else
                 _dataFile = file.Open(FileMode.Append, FileAccess.ReadWrite, FileShare.Read);
@@ -72,7 +74,7 @@ namespace NCE.FileManage
                 _dataLenght = _dataFile.Position;
                 _dataFile.Close();
                 _dataFile.Dispose();
-                StreamClosed = true;                
+                _streamClosed = true;
             }
             );
         }
@@ -143,7 +145,6 @@ namespace NCE.FileManage
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
@@ -166,11 +167,11 @@ namespace NCE.FileManage
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        /* TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
         // ~FileSave() {
         //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
         //   Dispose(false);
-        // }
+        // }*/
 
         // This code added to correctly implement the disposable pattern.
         public void Dispose()
