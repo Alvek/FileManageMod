@@ -24,34 +24,69 @@ namespace NCE.UTscanner.FileManageMod.Additional_files.Ascan_and_FFT
         /// Manager
         /// </summary>
         private DataTypeManager _manager;
-        /// <summary>
-        /// Ascan count
-        /// </summary>
-        private long _count;
+        ///// <summary>
+        ///// Ascan count
+        ///// </summary>
+        //private long _count;
         ///// <summary>
         ///// Ascan size
         ///// </summary>
         //private int _ascanSize;
+        private Dictionary<int, List<long>> _ascanOffsetsByChannell;// = new Dictionary<int, long>();
 
         public AscanViewer(FileInfo file, DataTypeManager manager)
         {
             _manager = manager;
             _stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-            _count = _stream.Length / manager.FrameSize;
+            long count = _stream.Length / manager.FrameSize;
+            _ascanOffsetsByChannell = count * 2 < int.MaxValue ?  new Dictionary<int, List<long>>((int)count * 2) : new Dictionary<int, List<long>>(int.MaxValue);
+
+            CreateAscanOffsetsByChannel(_stream, manager.FrameSize);
+
             //_ascanSize = AscanSize(_stream, manager);
         }
 
-        public long GetAscanCount()
+        public int GetAscanCount(int channelId)
         {
-            return _count;
+            if (_ascanOffsetsByChannell.ContainsKey(channelId))
+                return _ascanOffsetsByChannell[channelId].Count;
+            else
+                return 0;
         }
 
-        public byte[] GetFrameByAscanIdx(int idx)
+        public bool GetFrameByAscanIdx(int channelId, int ascanIdx, out byte[] frame)
         {
-            byte[] frame = new byte[_manager.FrameSize];
-            _stream.Position = idx * _manager.FrameSize;
-            _stream.Read(frame, 0, frame.Length);
-            return frame;
+            bool res = false;
+            frame = null;
+            if (_ascanOffsetsByChannell.ContainsKey(channelId) && ascanIdx < _ascanOffsetsByChannell[channelId].Count)
+            {
+                try
+                {
+                    frame = new byte[_manager.FrameSize];
+                    _stream.Position = _ascanOffsetsByChannell[channelId][ascanIdx];
+                    _stream.Read(frame, 0, frame.Length);
+                    res = true;
+                }
+                catch { frame = null; }
+            }
+            return res;
+        }
+
+        private void CreateAscanOffsetsByChannel(Stream file, int frameSize)
+        {
+            int offsetToNext = frameSize - 1;
+            file.Position = 0;
+            int id = 0;
+            while (_stream.Position < file.Length)
+            {
+                id = file.ReadByte();
+                if (!_ascanOffsetsByChannell.ContainsKey(id))
+                {
+                    _ascanOffsetsByChannell[id] = new List<long>();
+                }
+                _ascanOffsetsByChannell[id].Add(file.Position - 1);
+                file.Seek(offsetToNext, SeekOrigin.Current);
+            }
         }
 
         //private int AscanSize(Stream s, DataTypeManager manager)

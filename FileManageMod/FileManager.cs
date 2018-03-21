@@ -1,4 +1,6 @@
-﻿using NCE.ModulesCommonData;
+﻿using NCE.CommonData;
+using NCE.ModulesCommonData;
+using NCE.UTscanner.FileManageMod.Additional_files.Ascan_and_FFT;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,6 +34,10 @@ namespace NCE.FileManage
         /// Модуль загрузки файла контроля
         /// </summary>
         private FileLoader _fileLoader;
+        /// <summary>
+        /// Модуль просмотра а-сканов
+        /// </summary>
+        private AscanViewer _ascanViewer;
         /// <summary>
         /// Настойки файла контроля
         /// </summary>
@@ -137,6 +143,21 @@ namespace NCE.FileManage
 
             _fileSaver = new FileSave(_dataFile, append);
             _fileSaver.Completion.ContinueWith((x) => { _fileSaved = true; });
+        }
+
+        public void InitViwer(DataTypeManager manager)
+        {
+            _ascanViewer = new AscanViewer(_dataFile, manager);
+        }
+
+        public bool GetAscanFrameByIdx(int channelId, int ascanIdx, out byte[] frame)
+        {
+            return _ascanViewer.GetFrameByAscanIdx(channelId, ascanIdx, out frame);
+        }
+
+        public int GetAscanCountByIdx(int channelId)
+        {
+            return _ascanViewer.GetAscanCount(channelId);
         }
 
         /// <summary>
